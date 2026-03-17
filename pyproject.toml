@@ -1,0 +1,40 @@
+[project]
+name = "microgpt-workshop"
+version = "0.1.0"
+description = "Karpathy's microgpt with Japanese names dataset and wandb logging"
+requires-python = ">=3.10"
+
+dependencies = [
+    "wandb>=0.16",
+]
+
+[project.optional-dependencies]
+quantization = [
+    "torch>=2.0",
+]
+dev = [
+    "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# --- Usage ---
+# 1. Install uv (if not installed):
+#    curl -LsSf https://astral.sh/uv/install.sh | sh
+#
+# 2. Create venv and install dependencies:
+#    uv venv
+#    source .venv/bin/activate  # Linux/Mac
+#    uv pip install -e .
+#
+# 3. Login to wandb:
+#    wandb login
+#
+# 4. Run microgpt:
+#    python microgpt_wandb.py
+#
+# 5. (Optional) Install quantization dependencies:
+#    uv pip install -e ".[quantization]"
+#    python 02_quantization.py
