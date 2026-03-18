@@ -1,64 +1,109 @@
-# MicroGPT × wandb × 量子化 ハンズオン勉強会
+# MicroGPT Workshop
 
-## 概要
+Karpathy の [microgpt.py](https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95) をベースに、GPT の仕組みを体験するハンズオン勉強会です。
 
-Karpathy の [microgpt.py](https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95) をベースに、以下の 3 つのテーマを **1 本のハンズオン** として体験します。
+データセットを **日本語のひらがな名前** に変更しているので、生成される名前も日本語になります。
 
-データセットを **日本語のひらがな名前** に変更しているので、生成される名前も日本語です。
+勉強会スライド: [Google Slides](https://docs.google.com/presentation/d/1NuXir096PdWesgxzEzfiCWBodf8fqHHC8uitAMy91WE/edit?usp=drive_link)
 
-```
-microgpt.py + wandb: GPT の仕組みを理解しつつ学習をリアルタイム可視化
-        ↓
-学習済みモデルの重みを量子化して軽量化を体感
-```
+※ 2WINSアカウントでのみ閲覧可能。
 
 ## ファイル構成
 
 ```
-study-session/
-├── README.md                    ← このファイル
-└── docs/
-    ├── japanese_names.txt       ← 日本語ひらがな名前データセット（約 220 件）
-    ├── 01_microgpt.py           ← Karpathy microgpt 完全解説版 + wandb ログ
-    └── 02_quantization.py       ← 量子化デモ（FP32 vs INT8 比較）
+microgpt-workshop/
+├── README.md                ← このファイル
+├── pyproject.toml           ← プロジェクト設定（uv 用）
+├── japanese_names.txt       ← 日本語ひらがな名前データセット（約 230 件）
+├── microgpt_wandb.py        ← 学習スクリプト（GPT 学習 + wandb ログ + 重み保存）
+├── generate.py              ← 推論スクリプト（学習済み重みから名前生成）
+└── weights/                 ← 学習済みの重みファイル（.pkl）が保存される
 ```
 
-## セットアップ & 実行
+## セットアップ
 
-### 01_microgpt.py
+### 1. uv のインストール
 
 ```bash
-# wandb なしでも動く（pure Python、外部ライブラリ不要）
-cd docs
-python 01_microgpt.py
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# wandb ありで実行する場合
-pip install wandb
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### 2. 依存関係のインストール
+
+```bash
+uv sync
+```
+
+### 3. wandb の設定（オプション）
+
+wandb がなくても学習は動きますが、あるとダッシュボードで学習曲線をリアルタイム確認できます。
+
+```bash
 wandb login
-python 01_microgpt.py
-# → ダッシュボードで train/loss, perplexity をリアルタイム確認
 ```
 
-### 02_quantization.py
+## 使い方
+
+### 学習（microgpt_wandb.py）
 
 ```bash
-pip install torch wandb
-python 02_quantization.py
+# デフォルト設定で学習（1000 ステップ）
+uv run microgpt_wandb.py
+
+# ハイパーパラメータを変更して学習
+uv run microgpt_wandb.py --n_embd 64 --n_head 8
+uv run microgpt_wandb.py --num_steps 2000 --lr 0.005
+uv run microgpt_wandb.py --n_layer 2 --num_steps 3000
 ```
+
+学習完了後、重みが `weights/L{n_layer}_E{n_embd}_H{n_head}_S{num_steps}.pkl` に保存されます。
+
+#### 学習のオプション一覧
+
+| オプション       | デフォルト | 説明               |
+| ---------------- | ---------- | ------------------ |
+| `--n_layer`    | 1          | Transformer の層数 |
+| `--n_embd`     | 48         | 埋め込み次元数     |
+| `--block_size` | 16         | 最大コンテキスト長 |
+| `--n_head`     | 4          | Attention ヘッド数 |
+| `--num_steps`  | 1000       | 学習ステップ数     |
+| `--lr`         | 0.01       | 学習率             |
+| `--seed`       | 42         | 乱数シード         |
+
+### 推論（generate.py）
+
+```bash
+# 最新の重みでランダムに名前を生成
+uv run generate.py
+
+# 「さ」から始まる名前を生成
+uv run generate.py --start さ
+
+# 「ゆ」から始まる名前を 10 個生成
+uv run generate.py --start ゆ -n 10
+
+# 特定の重みファイルを指定
+uv run generate.py --weights weights/L1_E64_H8_S2000.pkl
+
+# 生成の多様性を上げる
+uv run generate.py --temperature 0.8
+```
+
+#### 推論のオプション一覧
+
+| オプション         | デフォルト | 説明                                   |
+| ------------------ | ---------- | -------------------------------------- |
+| `--start`        | なし       | 最初の一文字（ひらがな）               |
+| `-n` / `--num` | 20         | 生成する名前の数                       |
+| `--temperature`  | 0.5        | 生成の多様性（低い→確実、高い→多様） |
+| `--weights`      | 最新の重み | 重みファイルのパス                     |
 
 ## 参加者向け事前準備
 
-- Python 3.9+
-- wandb アカウント（https://wandb.ai）
-- 01 は外部ライブラリ不要、02 は PyTorch が必要
-
-## 01_microgpt.py の構成
-
-| セクション | 内容 |
-|-----------|------|
-| データセット | japanese_names.txt（ひらがな名前）を文字レベルでトークン化 |
-| Autograd | `Value` クラスで計算グラフ構築 → `backward()` で自動微分 |
-| アーキテクチャ | GPT-2 ベース: RMSNorm, Multi-Head Attention, MLP, 残差接続 |
-| 学習 | Adam + 線形学習率減衰、1,000 ステップ |
-| wandb | train/loss, perplexity, lr をリアルタイム記録（オプショナル） |
-| 推論 | temperature 制御で新しい日本語名前を生成 |
+- Python 3.10+
+- uv（上記の手順でインストール）
+- wandb アカウント（https://wandb.ai）- オプション
