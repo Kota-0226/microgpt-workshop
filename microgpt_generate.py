@@ -1,12 +1,12 @@
 """
-generate.py - 学習済み MicroGPT で日本語名前を生成する推論スクリプト
+microgpt_generate.py - 学習済み MicroGPT で日本語名前を生成する推論スクリプト
 
 使い方:
-  uv run generate.py                    # 最新の重みでランダムに 20 個生成
-  uv run generate.py --start さ         # 「さ」から始まる名前を生成
-  uv run generate.py --start ゆ -n 10   # 「ゆ」から始まる名前を 10 個
-  uv run generate.py --weights weights/L1_E48_H4_S1000.pkl  # 特定の重みを指定
-  uv run generate.py --temperature 0.8  # より多様な生成
+  uv run microgpt_generate.py                    # 最新の重みでランダムに 20 個生成
+  uv run microgpt_generate.py --start さ         # 「さ」から始まる名前を生成
+  uv run microgpt_generate.py --start ゆ -n 10   # 「ゆ」から始まる名前を 10 個
+  uv run microgpt_generate.py --weights weights/L1_E48_H4_S1000.pkl  # 特定の重みを指定
+  uv run microgpt_generate.py --temperature 0.8  # より多様な生成
 """
 
 import os
@@ -44,7 +44,7 @@ else:
     pkl_files = glob.glob(os.path.join(WEIGHTS_DIR, '*.pkl'))
     if not pkl_files:
         print("エラー: weights/ フォルダに .pkl ファイルがありません。")
-        print("先に uv run microgpt_wandb.py で学習してください。")
+        print("先に uv run microgpt_train.py で学習してください。")
         sys.exit(1)
     weights_path = max(pkl_files, key=os.path.getmtime)
 

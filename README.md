@@ -12,12 +12,12 @@ Karpathy の [microgpt.py](https://gist.github.com/karpathy/8627fe009c40f57531cb
 
 ```
 microgpt-workshop/
-├── README.md                ← このファイル
-├── pyproject.toml           ← プロジェクト設定（uv 用）
-├── japanese_names.txt       ← 日本語ひらがな名前データセット（約 230 件）
-├── microgpt_wandb.py        ← 学習スクリプト（GPT 学習 + wandb ログ + 重み保存）
-├── generate.py              ← 推論スクリプト（学習済み重みから名前生成）
-└── weights/                 ← 学習済みの重みファイル（.pkl）が保存される
+├── README.md              ← このファイル
+├── pyproject.toml         ← プロジェクト設定（uv 用）
+├── japanese_names.txt     ← 日本語ひらがな名前データセット（約 230 件）
+├── microgpt_train.py      ← 学習スクリプト（GPT 学習 + wandb ログ + 重み保存）
+├── microgpt_generate.py   ← 推論スクリプト（学習済み重みから名前生成）
+└── weights/               ← 学習済みの重みファイル（.pkl）が保存される
 ```
 
 ## セットアップ
@@ -48,16 +48,16 @@ wandb login
 
 ## 使い方
 
-### 学習（microgpt_wandb.py）
+### 学習（microgpt_train.py）
 
 ```bash
 # デフォルト設定で学習（1000 ステップ）
-uv run microgpt_wandb.py
+uv run microgpt_train.py
 
 # ハイパーパラメータを変更して学習
-uv run microgpt_wandb.py --n_embd 64 --n_head 8
-uv run microgpt_wandb.py --num_steps 2000 --lr 0.005
-uv run microgpt_wandb.py --n_layer 2 --num_steps 3000
+uv run microgpt_train.py --n_embd 64 --n_head 8
+uv run microgpt_train.py --num_steps 2000 --lr 0.005
+uv run microgpt_train.py --n_layer 2 --num_steps 3000
 ```
 
 学習完了後、重みが `weights/L{n_layer}_E{n_embd}_H{n_head}_S{num_steps}.pkl` に保存されます。
@@ -74,23 +74,23 @@ uv run microgpt_wandb.py --n_layer 2 --num_steps 3000
 | `--lr`         | 0.01       | 学習率             |
 | `--seed`       | 42         | 乱数シード         |
 
-### 推論（generate.py）
+### 推論（microgpt_generate.py）
 
 ```bash
 # 最新の重みでランダムに名前を生成
-uv run generate.py
+uv run microgpt_generate.py
 
 # 「さ」から始まる名前を生成
-uv run generate.py --start さ
+uv run microgpt_generate.py --start さ
 
 # 「ゆ」から始まる名前を 10 個生成
-uv run generate.py --start ゆ -n 10
+uv run microgpt_generate.py --start ゆ -n 10
 
 # 特定の重みファイルを指定
-uv run generate.py --weights weights/L1_E64_H8_S2000.pkl
+uv run microgpt_generate.py --weights weights/L1_E64_H8_S2000.pkl
 
 # 生成の多様性を上げる
-uv run generate.py --temperature 0.8
+uv run microgpt_generate.py --temperature 0.8
 ```
 
 #### 推論のオプション一覧
